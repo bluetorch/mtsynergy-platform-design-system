@@ -220,6 +220,168 @@ export const Loading: Story = {
 };
 ```
 
+## Design Tokens
+
+The design system exports platform-agnostic design tokens that work seamlessly across web (React/Tailwind) and mobile (React Native) applications.
+
+### Token Categories
+
+The following token categories are available:
+
+- **Colors**: Full palette with accessibility-compliant contrast ratios
+- **Spacing**: Responsive spacing scale (0–96px in 4px increments)
+- **Typography**: Font families, sizes (12–36px), and weights (400–700)
+- **Shadows**: Layered shadows for depth and hierarchy
+- **Breakpoints**: Responsive breakpoints (sm, md, lg, xl, 2xl)
+- **Border Radius**: Rounding scale from subtle to circular
+- **Z-Index**: Layering system for modals, dropdowns, and tooltips
+
+### Installation
+
+Tokens are automatically exported with the package:
+
+```bash
+npm install @mtsynergy/design-system
+```
+
+### Usage
+
+#### Web (React + Tailwind)
+
+Use tokens directly in Tailwind CSS classes:
+
+```typescript
+import { Button, Input } from '@mtsynergy/design-system';
+
+export function LoginForm() {
+  return (
+    <div className="p-8 gap-6 flex flex-col">
+      <Input 
+        label="Email" 
+        placeholder="your@email.com"
+        className="rounded-md border border-gray-200"
+      />
+      <Button 
+        variant="primary" 
+        className="bg-primary-600 hover:bg-primary-700"
+      >
+        Sign In
+      </Button>
+    </div>
+  );
+}
+```
+
+For direct token access in JavaScript:
+
+```typescript
+import { COLORS, SPACING, TYPOGRAPHY, SHADOWS, BREAKPOINTS, BORDER_RADIUS, Z_INDEX } from '@mtsynergy/design-system/tokens';
+
+// Use tokens programmatically
+const buttonStyle = {
+  padding: `${SPACING[4]}px ${SPACING[6]}px`, // 16px 24px
+  backgroundColor: COLORS.primary[600],
+  fontSize: TYPOGRAPHY.sizes.md,
+  boxShadow: SHADOWS.md,
+  borderRadius: BORDER_RADIUS.md,
+};
+```
+
+#### Mobile (React Native)
+
+Import tokens and use with StyleSheet or inline styles:
+
+```typescript
+import { StyleSheet } from 'react-native';
+import { COLORS, SPACING, TYPOGRAPHY, SHADOWS, Z_INDEX } from '@mtsynergy/design-system/tokens';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: SPACING[6], // 24px
+    backgroundColor: COLORS.background,
+  },
+  button: {
+    paddingVertical: SPACING[3], // 12px
+    paddingHorizontal: SPACING[4], // 16px
+    backgroundColor: COLORS.primary[600],
+    borderRadius: BORDER_RADIUS.md,
+    ...SHADOWS.md, // Includes elevation for React Native
+  },
+  buttonText: {
+    fontSize: TYPOGRAPHY.sizes.md,
+    fontWeight: TYPOGRAPHY.weights[600],
+    color: COLORS.white,
+  },
+});
+
+export function LoginButton() {
+  return (
+    <TouchableOpacity style={styles.button}>
+      <Text style={styles.buttonText}>Sign In</Text>
+    </TouchableOpacity>
+  );
+}
+```
+
+### Platform Differences
+
+| Feature | Web | React Native |
+|---------|-----|--------------|
+| **Spacing Units** | rem (via Tailwind) | px (numeric values) |
+| **Shadows** | CSS box-shadow strings | elevation + iOS shadow objects |
+| **Colors** | Hex strings | Hex strings |
+| **Typography** | CSS font properties | fontSize + fontWeight |
+| **Breakpoints** | CSS media queries | Manual layout logic |
+
+### Type Safety
+
+All tokens are fully typed with TypeScript:
+
+```typescript
+import type { ColorScale, SpacingScale, DesignTokens } from '@mtsynergy/design-system/tokens';
+
+// Tokens autocomplete in your IDE
+const color: keyof ColorScale = 'primary'; // ✓ Valid
+const size: keyof SpacingScale = 4; // ✓ Valid
+```
+
+### JSON Export
+
+For tooling and external systems, tokens are also available as JSON:
+
+```bash
+import tokens from '@mtsynergy/design-system/tokens.json';
+
+console.log(tokens.colors.primary); // { "50": "#f0f7ff", "100": "#e0f1ff", ... }
+```
+
+### Extending Tokens
+
+To add custom tokens while maintaining consistency, extend the token definitions:
+
+```typescript
+// your-app/tokens.ts
+import { COLORS, SPACING } from '@mtsynergy/design-system/tokens';
+
+export const CUSTOM_TOKENS = {
+  colors: {
+    ...COLORS,
+    brand: {
+      primary: '#your-color',
+    },
+  },
+  spacing: {
+    ...SPACING,
+    custom: 100,
+  },
+};
+```
+
+### Documentation
+
+For complete token specifications and values, see [src/tokens/README.md](./src/tokens/README.md).
+
 ## Build & Development
 
 ### Local Development

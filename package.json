@@ -9,8 +9,22 @@
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./tokens": {
+      "types": "./dist/tokens/index.d.ts",
+      "import": "./dist/tokens/index.js",
+      "require": "./dist/tokens/index.cjs"
+    },
+    "./tokens.json": "./dist/tokens.json"
+  },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build:tokens": "tsx scripts/build-tokens.ts",
+    "build": "npm run build:tokens && tsup",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lint": "eslint src --ext .ts,.tsx",
@@ -55,6 +69,7 @@
     "storybook": "^7.6.10",
     "tailwindcss": "^3.4.1",
     "tsup": "^8.0.1",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.0.0",
     "vitest": "^2.0.0"

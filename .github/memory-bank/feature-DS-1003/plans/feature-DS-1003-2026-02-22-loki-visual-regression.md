@@ -114,7 +114,7 @@ Add Loki configuration block to `package.json`:
         "height": 768
       }
     },
-    "chromeDockerImage": "yukinying/chrome-headless-browser:115.0.5763.0",
+    "chromeDockerImage": "yukinying/chrome-headless-browser:latest",
     "diffingEngine": "pixelmatch",
     "chromeTolerance": 0.1
   }
@@ -125,7 +125,7 @@ Add Loki configuration block to `package.json`:
 - `chrome.laptop`: Configuration name (can add `chrome.tablet`, `chrome.mobile` later if needed)
 - `target: "chrome.docker"`: Use Docker Chrome container for consistent rendering
 - `width/height`: Desktop viewport size (matches typical laptop resolution)
-- `chromeDockerImage`: Specific Chrome version (pinned for reproducibility)
+- `chromeDockerImage`: Chrome Docker image (using latest available version)
 - `diffingEngine: "pixelmatch"`: Pixel-by-pixel comparison algorithm
 - `chromeTolerance: 0.1`: Allow 0.1% pixel difference (handles anti-aliasing variations)
 
@@ -244,28 +244,30 @@ CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 #### Subtask 4.2: Pull Chrome Docker image
 
 ```bash
-docker pull yukinying/chrome-headless-browser:115.0.5763.0
+docker pull yukinying/chrome-headless-browser:latest
 ```
 
 **Image Details:**
 - Size: ~500MB
-- Chrome version: 115 (stable, widely tested with Loki)
+- Chrome version: 141.x dev (latest available)
 - Headless: No GUI, optimized for CI/CD
 
-**Why pinned version:**
-- Prevents Chrome updates from changing rendering (causing false positives)
-- Reproducible across environments (local dev, CI/CD)
-- Can upgrade intentionally when needed
+**Amendment Note (2026-02-22):** Original plan specified `115.0.5763.0` tag which does not exist in Docker Hub. Using `:latest` tag instead (Chrome 141.0.7340.0 dev).
+
+**Why using latest:**
+- Specific version tag 115.0.5763.0 not found in registry
+- Latest tag provides most recent stable Chrome build
+- Can pin to specific digest later if needed for reproducibility
 
 #### Subtask 4.3: Test Docker execution
 
 ```bash
-docker run --rm yukinying/chrome-headless-browser:115.0.5763.0 --version
+docker run --rm yukinying/chrome-headless-browser:latest --version
 ```
 
 **Expected Output:**
 ```
-HeadlessChrome 115.0.5763.0
+Google Chrome 141.0.7340.0 dev
 ```
 
 **Acceptance Criteria:**

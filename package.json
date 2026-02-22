@@ -33,11 +33,27 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "loki:test": "loki test --requireReference --reactUri file:./storybook-static",
+    "loki:update": "loki update --requireReference --reactUri file:./storybook-static",
+    "loki:approve": "loki approve",
+    "visual-test": "npm run build-storybook && npm run loki:test",
     "prepare": "husky"
   },
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "loki": {
+    "configurations": {
+      "chrome.laptop": {
+        "target": "chrome.docker",
+        "width": 1366,
+        "height": 768
+      }
+    },
+    "chromeDockerImage": "yukinying/chrome-headless-browser:latest",
+    "diffingEngine": "pixelmatch",
+    "chromeTolerance": 0.1
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -62,6 +78,7 @@
     "husky": "^9.0.0",
     "jsdom": "^24.0.0",
     "lint-staged": "^15.0.0",
+    "loki": "^0.35.1",
     "postcss": "^8.4.33",
     "prettier": "^3.2.0",
     "react": "^18.2.0",

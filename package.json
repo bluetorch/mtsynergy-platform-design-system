@@ -35,6 +35,8 @@
     "test:coverage": "vitest run --coverage",
     "loki:test": "loki test --reactUri http://localhost:6007",
     "loki:update": "loki update --reactUri http://localhost:6007",
+    "loki:test:ci": "loki test --configuration=chrome.ci --reactUri http://localhost:6007",
+    "loki:update:ci": "loki update --configuration=chrome.ci --reactUri http://localhost:6007",
     "loki:approve": "loki approve",
     "loki:serve": "cd storybook-static && python3 -m http.server 6007",
     "visual-test": "npm run build-storybook && npm run loki:test",
@@ -50,9 +52,14 @@
         "target": "chrome.app",
         "width": 1366,
         "height": 768
+      },
+      "chrome.ci": {
+        "target": "chrome.docker",
+        "width": 1366,
+        "height": 768
       }
     },
-    "chromeDockerImage": "chromedp/headless-shell:stable",
+    "chromeDockerImage": "yukinying/chrome-headless-browser:latest",
     "diffingEngine": "pixelmatch",
     "chromeTolerance": 0.1
   },

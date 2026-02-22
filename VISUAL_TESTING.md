@@ -6,7 +6,7 @@ This project uses [Loki](https://loki.js.org/) for visual regression testing of 
 
 - **Tool:** Loki v0.35.1
 - **Storage:** Git LFS for baseline screenshots
-- **Browser:** Chrome.app (local Chrome installation)
+- **Browser:** Chrome (local Chrome installation for development, Docker container for CI)
 - **Viewport:** 1366x768 (laptop/desktop resolution)
 - **Diffing Engine:** pixelmatch with 0.1% tolerance for anti-aliasing
 - **Coverage:** 85 baseline screenshots across 10 components
@@ -38,15 +38,23 @@ npm run build-storybook
 npm run loki:serve
 
 # Run visual regression tests (compares against baselines)
+# Local (uses chrome.app for speed)
 npm run loki:test
 
+# CI/CD (uses chrome.docker for consistency)
+npm run loki:test:ci
+
 # Update baselines after intentional visual changes
+# Local
 npm run loki:update
+
+# CI/CD
+npm run loki:update:ci
 
 # Approve specific test failures (copies current -> reference)
 npm run loki:approve
 
-# Full workflow: Build Storybook + Run Tests
+# Full workflow: Build Storybook + Run Tests (local)
 npm run visual-test
 ```
 
@@ -139,9 +147,14 @@ Configuration is defined in `package.json`:
         "target": "chrome.app",
         "width": 1366,
         "height": 768
+      },
+      "chrome.ci": {
+        "target": "chrome.docker",
+        "width": 1366,
+        "height": 768
       }
     },
-    "chromeDockerImage": "chromedp/headless-shell:stable",
+    "chromeDockerImage": "yukinying/chrome-headless-browser:latest",
     "diffingEngine": "pixelmatch",
     "chromeTolerance": 0.1
   }
@@ -150,8 +163,11 @@ Configuration is defined in `package.json`:
 
 ### Configuration Options
 
-- **target:** `chrome.app` uses local Chrome browser (more reliable than Docker on macOS)
+- **configurations:** Defines multiple targets for different environments
+  - `chrome.laptop`: Uses `chrome.app` (local Chrome installation) for rapid local testing
+  - `chrome.ci`: Uses `chrome.docker` (Docker container) for consistent CI/CD testing
 - **width/height:** Desktop viewport size for consistent screenshots
+- **chromeDockerImage:** Docker image for CI testing (`yukinying/chrome-headless-browser:latest`)
 - **diffingEngine:** `pixelmatch` for pixel-perfect comparison
 - **chromeTolerance:** 0.1% tolerance for anti-aliasing differences
 
@@ -174,11 +190,13 @@ curl http://localhost:6007/iframe.html
 
 **Cause:** Network connectivity issue between Loki and Chrome
 
-**Solution:**
+**Solution (Local Development):**
 1. Stop all Loki processes: `pkill -f loki`
 2. Restart HTTP server: `npm run loki:serve`
 3. Clear Loki cache: `rm -rf .loki/.cache/`
-4. Try again: `npm run loki:test`
+4. Try again: `npm run loki:test` (uses `chrome.app` by default)
+
+**Note:** If using Docker locally on ARM64 Macs, you may encounter ECONNRESET due to Docker Desktop networking. Use `npm run loki:test` (chrome.app) for local development. The Docker configuration is optimized for CI/CD environments (Linux/amd64).
 
 ### Baseline Mismatch After Git Clone
 
@@ -231,13 +249,18 @@ git commit -m "chore: ensure Git LFS tracking for Loki baselines"
 
 ## CI/CD Integration
 
-For continuous integration, ensure:
+Loki visual tests run in CI/CD using the Docker-based configuration for consistency across environments.
 
-1. **Git LFS installed** in CI environment
-2. **HTTP server** running before tests
-3. **Storybook built** before running Loki
+### Prerequisites for CI
 
-Example CI workflow:
+1. **Git LFS:** Required for baseline image storage
+2. **Docker:** Required for Chrome Docker image
+3. **Node.js:** Same version as local development
+
+### CI Setup
+
+In your CI/CD pipeline, use `npm run loki:test:ci` which targets the `chrome.ci` configuration:
+
 ```yaml
 - name: Install Git LFS
   run: git lfs install && git lfs pull
@@ -251,8 +274,45 @@ Example CI workflow:
 - name: Start HTTP server
   run: npm run loki:serve &
 
-- name: Run visual tests
-  run: npm run loki:test
+- name: Wait for server
+  run: sleep 3
+
+- name: Run visual regression tests (CI)
+  run: npm run loki:test:ci
+
+- name: Upload artifacts on failure
+  if: failure()
+  uses: actions/upload-artifact@v3
+  with:
+    name: loki-diffs
+    path: .loki/difference/
+```
+
+### Local Development vs CI
+
+- **Local (`npm run loki:test`):** Uses `chrome.app` target for speed and ease of use
+- **CI (`npm run loki:test:ci`):** Uses `chrome.docker` target for consistency and reproducibility
+
+Both configurations produce identical viewport dimensions (1366x768) and use the same diffing tolerance (0.1%) to ensure visual consistency.
+
+### Baseline Management
+
+Baselines are committed to Git LFS and shared across all environments:
+
+```bash
+# Developers update baselines locally
+npm run build-storybook
+npm run loki:update
+
+# Commit baseline changes
+git add .loki/reference/
+git commit -m "chore: update visual baselines"
+
+# Push (Git LFS handles large files automatically)
+git push
+
+# CI pulls baselines and runs tests
+# (see CI Setup section above)
 ```
 
 ## Best Practices

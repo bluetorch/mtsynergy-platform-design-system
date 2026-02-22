@@ -42,13 +42,13 @@ describe('Button', () => {
     it('applies secondary variant when specified', () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('mts-bg-gray');
+      expect(button.className).toContain('mts-bg-secondary');
     });
 
     it('applies danger variant when specified', () => {
       render(<Button variant="danger">Delete</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('mts-bg-red');
+      expect(button.className).toContain('mts-bg-danger');
     });
   });
 
@@ -100,6 +100,72 @@ describe('Button', () => {
     });
   });
 
+  describe('loading state', () => {
+    it('shows spinner when isLoading is true', () => {
+      render(<Button isLoading>Loading</Button>);
+      const button = screen.getByRole('button');
+      const spinner = button.querySelector('svg');
+      expect(spinner).toBeInTheDocument();
+      expect(spinner).toHaveClass('mts-animate-spin');
+    });
+
+    it('disables button when isLoading is true', () => {
+      render(<Button isLoading>Loading</Button>);
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
+
+    it('does not call onClick when isLoading', () => {
+      const handleClick = vi.fn();
+      render(
+        <Button isLoading onClick={handleClick}>
+          Loading
+        </Button>
+      );
+      fireEvent.click(screen.getByRole('button'));
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+
+    it('hides spinner when isLoading is false', () => {
+      render(<Button isLoading={false}>Not Loading</Button>);
+      const button = screen.getByRole('button');
+      const spinner = button.querySelector('svg');
+      expect(spinner).not.toBeInTheDocument();
+    });
+
+    it('shows spinner with correct size for small button', () => {
+      render(
+        <Button size="sm" isLoading>
+          Small Loading
+        </Button>
+      );
+      const button = screen.getByRole('button');
+      const spinner = button.querySelector('svg');
+      expect(spinner).toHaveClass('mts-w-3', 'mts-h-3');
+    });
+
+    it('shows spinner with correct size for medium button', () => {
+      render(
+        <Button size="md" isLoading>
+          Medium Loading
+        </Button>
+      );
+      const button = screen.getByRole('button');
+      const spinner = button.querySelector('svg');
+      expect(spinner).toHaveClass('mts-w-4', 'mts-h-4');
+    });
+
+    it('shows spinner with correct size for large button', () => {
+      render(
+        <Button size="lg" isLoading>
+          Large Loading
+        </Button>
+      );
+      const button = screen.getByRole('button');
+      const spinner = button.querySelector('svg');
+      expect(spinner).toHaveClass('mts-w-5', 'mts-h-5');
+    });
+  });
+
   describe('accessibility', () => {
     it('is focusable by default', () => {
       render(<Button>Focusable</Button>);
@@ -117,6 +183,13 @@ describe('Button', () => {
     it('accepts type attribute for form submission', () => {
       render(<Button type="submit">Submit</Button>);
       expect(screen.getByRole('button')).toHaveAttribute('type', 'submit');
+    });
+
+    it('spinner has aria-hidden attribute', () => {
+      render(<Button isLoading>Loading</Button>);
+      const button = screen.getByRole('button');
+      const spinner = button.querySelector('svg');
+      expect(spinner).toHaveAttribute('aria-hidden', 'true');
     });
   });
 
@@ -136,6 +209,22 @@ describe('Button', () => {
       render(<Button size={undefined}>Test</Button>);
       const button = screen.getByRole('button');
       expect(button.className).toContain('mts-px-4');
+    });
+
+    it('handles undefined isLoading gracefully (uses default false)', () => {
+      render(<Button isLoading={undefined}>Test</Button>);
+      const button = screen.getByRole('button');
+      const spinner = button.querySelector('svg');
+      expect(spinner).not.toBeInTheDocument();
+    });
+
+    it('respects both disabled and isLoading props', () => {
+      render(
+        <Button disabled isLoading>
+          Test
+        </Button>
+      );
+      expect(screen.getByRole('button')).toBeDisabled();
     });
   });
 });

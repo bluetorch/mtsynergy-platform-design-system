@@ -1,0 +1,113 @@
+version: 38
+jobs:
+  - name: Build and Test
+    steps:
+      - !CheckoutStep
+        name: Checkout
+        cloneCredential: !DefaultCredential {}
+        withLfs: false
+        withSubmodules: false
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Setup Node
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            node --version
+            npm --version
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Install Dependencies
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm ci
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Lint
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm run lint
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Format Check
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm run format:check
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Test
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm run test:run
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Build
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm run build
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Build Storybook
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm run build-storybook
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    triggers:
+      - !BranchUpdateTrigger {}
+    retryCondition: never
+    maxRetries: 3
+    retryDelay: 30
+    timeout: 3600
+
+  - name: Publish
+    steps:
+      - !CheckoutStep
+        name: Checkout
+        cloneCredential: !DefaultCredential {}
+        withLfs: false
+        withSubmodules: false
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Install Dependencies
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm ci
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Build
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm run build
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+      - !CommandStep
+        name: Publish to Registry
+        runInContainer: true
+        image: node:22-alpine
+        interpreter: !DefaultInterpreter
+          commands: |
+            npm publish --registry=http://onedev.mtsynergy.internal/lib/npm/
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    triggers:
+      - !TagCreateTrigger
+        tags: 'v*'
+    retryCondition: never
+    maxRetries: 3
+    retryDelay: 30
+    timeout: 3600

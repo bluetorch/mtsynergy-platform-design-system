@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "@mtsynergy/platform-design-system",
   "version": "0.0.1",
   "description": "React component library and design tokens for MTSynergy.",
@@ -12,7 +13,13 @@
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write src/",
+    "format:check": "prettier --check src/",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky"
   },
   "peerDependencies": {
     "react": "^18.2.0",
@@ -34,7 +41,21 @@
     "@storybook/addon-essentials": "^7.6.10",
     "@storybook/addon-links": "^7.6.10",
     "@storybook/addon-interactions": "^7.6.10",
-    "@storybook/blocks": "^7.6.10"
+    "@storybook/addon-a11y": "^7.6.10",
+    "@storybook/blocks": "^7.6.10",
+    "eslint": "^9.0.0",
+    "@eslint/js": "^9.0.0",
+    "typescript-eslint": "^8.0.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "prettier": "^3.2.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "vitest": "^2.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "jsdom": "^24.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0"
   },
   "publishConfig": {
     "registry": "http://onedev.mtsynergy.internal/lib/npm/"

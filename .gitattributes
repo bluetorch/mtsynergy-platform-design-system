@@ -1,0 +1,2 @@
+# Loki reference screenshots tracked by Git LFS
+.loki/reference/**/*.png filter=lfs diff=lfs merge=lfs -text

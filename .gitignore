@@ -35,3 +35,8 @@ coverage/
 .cache/
 .turbo/
 *.tsbuildinfo
+
+# Loki temporary files
+.loki/current/
+.loki/difference/
+.loki/.cache/

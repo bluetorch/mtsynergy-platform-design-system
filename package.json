@@ -33,9 +33,10 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "loki:test": "loki test --requireReference --reactUri file:./storybook-static",
-    "loki:update": "loki update --requireReference --reactUri file:./storybook-static",
+    "loki:test": "loki test --reactUri http://localhost:6007",
+    "loki:update": "loki update --reactUri http://localhost:6007",
     "loki:approve": "loki approve",
+    "loki:serve": "cd storybook-static && python3 -m http.server 6007",
     "visual-test": "npm run build-storybook && npm run loki:test",
     "prepare": "husky"
   },

@@ -16,7 +16,7 @@
 - **Styling:** Tailwind CSS 3.x
 - **Build Tool:** Vite (ESM output)
 - **Documentation:** Storybook 7.x
-- **Testing:** Vitest + Chromatic (visual testing)
+- **Testing:** Vitest + Loki (visual regression testing)
 - **Distribution:** npm package (OneDev registry) + CDN (R2)
 
 ## Project Structure
@@ -400,8 +400,9 @@ npm run build
 npm run test
 npm run test:watch
 
-# Visual regression testing (Chromatic)
-npm run chromatic
+# Visual regression testing (Loki)
+npm run visual-test  # Build Storybook + run visual tests
+npm run loki:update  # Update baselines after intentional changes
 ```
 
 ### Storybook
@@ -410,11 +411,13 @@ npm run chromatic
 # Start Storybook dev server
 npm run storybook
 
-# Build static Storybook for CI
+# Build static Storybook for deployment
 npm run build-storybook
 
-# Deploy to Chromatic (visual testing + documentation hosting)
-npm run chromatic
+# Run visual regression tests
+# Note: Requires HTTP server for Storybook
+npm run loki:serve  # In one terminal
+npm run visual-test  # In another terminal
 ```
 
 ## Configuration
@@ -510,7 +513,8 @@ wrangler r2 cp ./dist/* r2://mtsynergy-cdn/@mtsynergy/design-system@1.0.0/ --rec
 - [ ] Build succeeds (`npm run build`)
 - [ ] Version bumped in package.json
 - [ ] CHANGELOG.md updated
-- [ ] Chromatic visual regression tests approved (no unexpected changes)
+- [ ] Loki visual regression tests passed (no unexpected changes)
+- [ ] If visual changes are intentional, update baselines with `npm run loki:update`
 - [ ] Code review approved (CMP-020)
 - [ ] Deployment approval (CMP-021)
 - [ ] npm publish/R2 sync successful

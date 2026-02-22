@@ -41,7 +41,7 @@ This document lists user stories owned by **platform-design-system** (React comp
   - Document component props, variants, states (default, loading, error, disabled)
   - Live examples with interactive controls (Storybook argTypes)
   - Accessibility tests (a11y addon)
-  - Visual regression testing via Chromatic
+  - Visual regression testing via Loki + Git LFS
 
 ### Tailwind Integration (DS-1004)
 
@@ -124,7 +124,8 @@ npm run build
 npm run test
 
 # Visual regression testing
-npm run chromatic
+npm run loki:serve  # Terminal 1: Start HTTP server
+npm run loki:test   # Terminal 2: Run tests
 
 # Publish to npm registry
 npm publish --registry https://git.example.com/api/npm/registry/
@@ -147,7 +148,7 @@ wrangler r2 cp ./dist/* r2://mtsynergy-cdn/@mtsynergy/design-system@1.0.0/ --rec
 ## Testing Strategy
 
 - **Unit Tests:** Component rendering, prop validation
-- **Visual Regression:** Chromatic (screenshot tests per variant)
+- **Visual Regression:** Loki (screenshot tests per variant)
 - **Accessibility:** a11y addon (WCAG compliance checks)
 - **Storybook:** Interactive docs + manual testing
 

@@ -8,6 +8,8 @@ const __dirname = path.dirname(__filename);
 
 // Import tokens from src/tokens
 import { colors, spacing, typography, shadows, breakpoints, borderRadius, zIndex } from '../src/tokens/index';
+// Import theme definitions for dark mode overrides
+import { darkThemeOverrides } from '../src/theme/index';
 
 /**
  * Convert hex color to RGB channels (e.g., "#0066CC" -> "0 102 204")
@@ -87,19 +89,54 @@ function transformShadows() {
 
 /**
  * Generate CSS variables file with RGB channels for colors
+ * Outputs light variables in :root
+ * Outputs dark mode overrides under html[data-mts-theme="dark"]
  */
 export function generateCssVariables(): string {
-  const cssLines: string[] = [':root {'];
+  const cssLines: string[] = [];
   
-  // Iterate over all color palettes and shades
+  // Light theme variables in :root
+  cssLines.push(':root {');
   Object.entries(colors).forEach(([paletteName, shades]) => {
     Object.entries(shades).forEach(([shade, hex]) => {
       const channels = hexToRgbChannels(hex as string);
       cssLines.push(`  --color-${paletteName}-${shade}: ${channels};`);
     });
   });
-  
   cssLines.push('}');
+  
+  // Dark theme overrides (only colors that differ from light)
+  cssLines.push('');
+  cssLines.push('html[data-mts-theme="dark"] {');
+  if (darkThemeOverrides.colors) {
+    Object.entries(darkThemeOverrides.colors).forEach(([paletteName, overrideShades]) => {
+      if (overrideShades) {
+        Object.entries(overrideShades).forEach(([shade, hex]) => {
+          const channels = hexToRgbChannels(hex as string);
+          cssLines.push(`  --color-${paletteName}-${shade}: ${channels};`);
+        });
+      }
+    });
+  }
+  cssLines.push('}');
+  
+  // Optional: System preference fallback (when no JS-set data-mts-theme attribute)
+  cssLines.push('');
+  cssLines.push('@media (prefers-color-scheme: dark) {');
+  cssLines.push('  html:not([data-mts-theme]) {');
+  if (darkThemeOverrides.colors) {
+    Object.entries(darkThemeOverrides.colors).forEach(([paletteName, overrideShades]) => {
+      if (overrideShades) {
+        Object.entries(overrideShades).forEach(([shade, hex]) => {
+          const channels = hexToRgbChannels(hex as string);
+          cssLines.push(`    --color-${paletteName}-${shade}: ${channels};`);
+        });
+      }
+    });
+  }
+  cssLines.push('  }');
+  cssLines.push('}');
+  
   return cssLines.join('\n');
 }
 

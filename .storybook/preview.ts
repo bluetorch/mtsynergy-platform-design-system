@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react';
-import '../src/styles/global.css';
+// Import the compiled DS CSS artifact (includes variables + .mts-* utilities)
+import '../dist/styles.css';
 
 const preview: Preview = {
   parameters: {

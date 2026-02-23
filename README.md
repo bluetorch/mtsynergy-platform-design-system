@@ -384,6 +384,112 @@ export const CUSTOM_TOKENS = {
 
 For complete token specifications and values, see [src/tokens/README.md](./src/tokens/README.md).
 
+## Web Theming
+
+The design system provides a web-only theming API for light/dark mode support with automatic persistence and system preference detection.
+
+### Installation
+
+1. **Import the compiled styles** in your app root:
+   ```typescript
+   import '@mtsynergy/platform-design-system/styles.css';
+   ```
+
+2. **Wrap your app with ThemeProvider:**
+   ```tsx
+   import { ThemeProvider, useTheme } from '@mtsynergy/platform-design-system';
+
+   function App() {
+     return (
+       <ThemeProvider>
+         <YourApp />
+       </ThemeProvider>
+     );
+   }
+   ```
+
+### Usage
+
+Use the `useTheme` hook to access and control the theme:
+
+```tsx
+import { useTheme } from '@mtsynergy/platform-design-system';
+
+function ThemeSwitcher() {
+  const { preference, resolvedTheme, setPreference } = useTheme();
+
+  return (
+    <div>
+      <p>Current theme: {resolvedTheme}</p>
+      <p>Preference: {preference}</p>
+
+      <button onClick={() => setPreference('light')}>Light</button>
+      <button onClick={() => setPreference('dark')}>Dark</button>
+      <button onClick={() => setPreference('system')}>System</button>
+    </div>
+  );
+}
+```
+
+### Theme Preferences
+
+The theme preference can be one of three values:
+
+- **`'light'`** — Force light mode (ignores system preference)
+- **`'dark'`** — Force dark mode
+- **`'system'`** — Follow the user's system preference; listens for changes automatically
+
+### How It Works
+
+1. **Persistence**: User preference is saved to `localStorage` under key `mts-theme`
+2. **System Preference**: When preference is `'system'`, the theme respects `prefers-color-scheme` media query
+3. **DOM Attribute**: The resolved theme is applied via the `data-mts-theme` attribute on the `<html>` element
+   - `html[data-mts-theme="dark"]` — dark theme CSS variables active
+   - (no attribute) — light theme (base) CSS variables active
+4. **CSS Variables**: Theme values are controlled via CSS custom properties in `:root` and `html[data-mts-theme="dark"]`
+
+### React Native Compatibility
+
+Theme definitions are written in TypeScript and **can be reused by React Native** apps:
+
+```typescript
+import { lightTheme, darkThemeOverrides, mergeTheme } from '@mtsynergy/platform-design-system';
+
+// Use theme colors in RN
+export const rnLightTheme = lightTheme;
+export const rnDarkTheme = mergeTheme(lightTheme, darkThemeOverrides);
+
+// Access colors directly from TS objects
+const buttonColor = rnLightTheme.colors.primary[500];
+```
+
+### Micro-Frontend Considerations
+
+For Micro-Frontend (MFE) architectures:
+
+1. **Single CSS Load**: Ensure the DS CSS (`dist/styles.css`) is loaded **once** in the host shell, not by each micro-app
+2. **Theme Attribute**: Set the `data-mts-theme` attribute on the `<html>` element at the **host level** to ensure unified theming across all apps
+3. **No Tailwind Required**: Consumer micro-apps do not need Tailwind CSS configured; the DS provides pre-compiled utilities
+
+Example host setup:
+
+```tsx
+// Host app
+import '@mtsynergy/platform-design-system/styles.css';
+import { ThemeProvider } from '@mtsynergy/platform-design-system';
+
+export function HostShell() {
+  return (
+    <ThemeProvider>
+      <Header />
+      <MicroApp1 /> {/* Will use DS components automatically */}
+      <MicroApp2 /> {/* Will use DS components automatically */}
+    </ThemeProvider>
+  );
+}
+```
+
+
 ## Build & Development
 
 ### Local Development

@@ -6,7 +6,6 @@ export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  prefix: "mts-",
   theme: {
     extend: {
       colors: {

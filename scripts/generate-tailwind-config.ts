@@ -10,6 +10,16 @@ const __dirname = path.dirname(__filename);
 import { colors, spacing, typography, shadows, breakpoints, borderRadius, zIndex } from '../src/tokens/index';
 
 /**
+ * Convert hex color to RGB channels (e.g., "#0066CC" -> "0 102 204")
+ */
+function hexToRgbChannels(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r} ${g} ${b}`;
+}
+
+/**
  * Convert pixels to rem (16px = 1rem)
  */
 function pxToRem(px: number): string {
@@ -76,6 +86,81 @@ function transformShadows() {
 }
 
 /**
+ * Generate CSS variables file with RGB channels for colors
+ */
+export function generateCssVariables(): string {
+  const cssLines: string[] = [':root {'];
+  
+  // Iterate over all color palettes and shades
+  Object.entries(colors).forEach(([paletteName, shades]) => {
+    Object.entries(shades).forEach(([shade, hex]) => {
+      const channels = hexToRgbChannels(hex as string);
+      cssLines.push(`  --color-${paletteName}-${shade}: ${channels};`);
+    });
+  });
+  
+  cssLines.push('}');
+  return cssLines.join('\n');
+}
+
+/**
+ * Generate Tailwind preset with variables-based colors
+ */
+export function generateTailwindPreset(): string {
+  // Build colors object with variable references for opacity support
+  const colorObj: Record<string, any> = {};
+  
+  Object.entries(colors).forEach(([paletteName, shades]) => {
+    colorObj[paletteName] = {};
+    Object.entries(shades).forEach(([shade]) => {
+      // Use rgb(var(...) / <alpha-value>) syntax for opacity support
+      colorObj[paletteName][shade] = `rgb(var(--color-${paletteName}-${shade}) / <alpha-value>)`;
+    });
+  });
+
+  const spacing_rem = transformSpacing();
+  const fontSize_rem = transformFontSize();
+  const bp = transformBreakpoints();
+  const br = transformBorderRadius();
+  const shadow_map = transformShadows();
+  const zIndex_str: Record<string, string> = Object.fromEntries(
+    Object.entries(zIndex).map(([key, value]) => [key, String(value)])
+  );
+
+  const preset = `// AUTO-GENERATED from src/tokens - DO NOT EDIT MANUALLY
+// To modify tokens, edit files in src/tokens/ and run: npm run build:tokens
+
+import type { Config } from 'tailwindcss';
+
+const extend = {
+  colors: ${JSON.stringify(colorObj, null, 6)},
+  spacing: ${JSON.stringify(spacing_rem, null, 6)},
+  fontSize: ${JSON.stringify(fontSize_rem, null, 6)},
+  fontFamily: {
+    sans: ${JSON.stringify(typography.fontFamily.sans)},
+  },
+  fontWeight: ${JSON.stringify(typography.fontWeight, null, 6)},
+  boxShadow: ${JSON.stringify(shadow_map, null, 6)},
+  screens: ${JSON.stringify(bp, null, 6)},
+  borderRadius: ${JSON.stringify(br, null, 6)},
+  zIndex: ${JSON.stringify(zIndex_str, null, 6)},
+} satisfies NonNullable<Config['theme']>['extend'];
+
+const preset: Config = {
+  content: [],
+  theme: {
+    extend,
+  },
+  plugins: [],
+};
+
+export default preset;
+`;
+
+  return preset;
+}
+
+/**
  * Generate Tailwind config as a string
  */
 export function generateTailwindConfig(): string {
@@ -93,7 +178,6 @@ export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  prefix: "mts-",
   theme: {
     extend: {
       colors: ${JSON.stringify(colors, null, 6)},
@@ -143,7 +227,23 @@ export function generateTokensJSON() {
 export function generateAll() {
   const projectRoot = path.resolve(__dirname, '..');
 
-  // Generate Tailwind config
+  // Generate CSS variables file
+  const cssVariables = generateCssVariables();
+  const stylesDir = path.join(projectRoot, 'src', 'styles');
+  if (!fs.existsSync(stylesDir)) {
+    fs.mkdirSync(stylesDir, { recursive: true });
+  }
+  const variablesPath = path.join(stylesDir, 'variables.css');
+  fs.writeFileSync(variablesPath, cssVariables, 'utf-8');
+  console.log(`✓ Generated ${variablesPath}`);
+
+  // Generate Tailwind preset
+  const preset = generateTailwindPreset();
+  const presetPath = path.join(projectRoot, 'src', 'tailwind.preset.ts');
+  fs.writeFileSync(presetPath, preset, 'utf-8');
+  console.log(`✓ Generated ${presetPath}`);
+
+  // Generate Tailwind config (for local development)
   const tailwindConfig = generateTailwindConfig();
   const tailwindPath = path.join(projectRoot, 'tailwind.config.js');
   fs.writeFileSync(tailwindPath, tailwindConfig, 'utf-8');

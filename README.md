@@ -224,6 +224,8 @@ export const Loading: Story = {
 
 The design system exports platform-agnostic design tokens that work seamlessly across web (React/Tailwind) and mobile (React Native) applications.
 
+**Generated artifacts:** `src/styles/variables.css` and `src/tailwind.preset.ts` are generated from `src/tokens/*` via `npm run build:tokens` and should not be edited manually.
+
 ### Token Categories
 
 The following token categories are available:
